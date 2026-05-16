@@ -9,7 +9,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+<<<<<<< HEAD
 app.use(cors({ origin: 'https://construmaxv2.netlify.app' }));
+=======
+app.use(cors({ origin: 'https://construmaxv2.netlify.app/' }));
+>>>>>>> be91ec5d947aad953dd96dca0a08d2fe921cd53c
 app.use(express.json());
 
 // Health check
