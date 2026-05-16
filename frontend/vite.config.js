@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://contrumaxv2.onrender.com',
+        target: 'https://contrumaxv2.onrender.com/api',
         changeOrigin: true
       }
     }
