@@ -10,7 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 
-app.use(cors({ origin: 'https://construmaxv2.netlify.app' }));
+app.use(cors({
+  origin: ['https://construmaxv2.netlify.app', 'http://localhost:5173']
+}));
 app.use(express.json());
 
 // Health check

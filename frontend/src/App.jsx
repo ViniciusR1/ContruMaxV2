@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Produtos from './pages/Produtos';
 import Movimentacoes from './pages/Movimentacoes';
 import Alertas from './pages/Alertas';
+import { api } from './services/api';
 import {
   LayoutDashboard, Package, ArrowLeftRight, BellDot,
   HardHat, LogOut, ChevronDown,
@@ -20,11 +21,11 @@ const navItems = [
   { to: '/alertas', label: 'Alertas', icon: BellDot, desc: 'Reposição de estoque' },
 ];
 
+// ✅ Usa api.getProducts em vez de fetch('/api/...') direto
 function AlertaBadge() {
   const [count, setCount] = React.useState(0);
   React.useEffect(() => {
-    fetch('/api/products?alerta=true')
-      .then(r => r.json())
+    api.getProducts({ alerta: 'true' })
       .then(d => setCount(d.data?.length || 0))
       .catch(() => {});
   }, []);
@@ -60,7 +61,7 @@ function UserMenu() {
           display: 'flex', alignItems: 'center', gap: 10,
           width: '100%', background: open ? 'var(--bg3)' : 'transparent',
           border: '1px solid ' + (open ? 'var(--border)' : 'transparent'),
-          borderRadius: 'var(--radius)', padding: '9px 10px',
+          borderRadius: '6px', padding: '9px 10px',
           cursor: 'pointer', transition: 'all 150ms ease',
         }}
       >
@@ -68,7 +69,7 @@ function UserMenu() {
           width: 32, height: 32, borderRadius: 8, flexShrink: 0,
           background: 'var(--accent-dim)', border: '1px solid rgba(245,166,35,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--font-cond)', fontWeight: 800, fontSize: 13,
+          fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 800, fontSize: 13,
           color: 'var(--accent)',
         }}>
           {iniciais}
@@ -90,9 +91,8 @@ function UserMenu() {
           <div style={{
             position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 6,
             background: 'var(--bg2)', border: '1px solid var(--border-light)',
-            borderRadius: 'var(--radius-lg)', zIndex: 50, overflow: 'hidden',
+            borderRadius: '10px', zIndex: 50, overflow: 'hidden',
             boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-            animation: 'slideUp 150ms ease',
           }}>
             <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Conectado como</div>
@@ -104,7 +104,7 @@ function UserMenu() {
                 display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                 padding: '11px 14px', background: 'none', border: 'none',
                 cursor: 'pointer', color: 'var(--danger)', fontSize: 13.5,
-                fontWeight: 500, fontFamily: 'var(--font)', transition: 'background 150ms',
+                fontWeight: 500, fontFamily: 'Barlow, sans-serif', transition: 'background 150ms',
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--danger-dim)'}
               onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -129,29 +129,18 @@ function Sidebar() {
           <span className="logo-sub">Gestão de Estoque</span>
         </div>
       </div>
-
       <nav className="sidebar-nav">
-        <div style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: 1,
-          color: 'var(--text-dim)', textTransform: 'uppercase',
-          padding: '4px 4px 8px', marginTop: 4,
-        }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: 'var(--text-dim)', textTransform: 'uppercase', padding: '4px 4px 8px', marginTop: 4 }}>
           Menu Principal
         </div>
         {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
+          <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <Icon size={17} />
             <span style={{ flex: 1 }}>{label}</span>
             {label === 'Alertas' && <AlertaBadge />}
           </NavLink>
         ))}
       </nav>
-
       <div style={{ padding: '12px', borderTop: '1px solid var(--border)' }}>
         <UserMenu />
       </div>

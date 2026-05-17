@@ -1,4 +1,8 @@
-const BASE_URL = '/api';
+// Em produção (Netlify): usa VITE_API_URL = https://contrumaxv2.onrender.com
+// Em desenvolvimento (local): usa proxy do Vite via '/api'
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
