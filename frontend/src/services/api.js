@@ -1,5 +1,6 @@
-// Em produção (Netlify): usa VITE_API_URL = https://contrumaxv2.onrender.com
-// Em desenvolvimento (local): usa proxy do Vite via '/api'
+// Lê a URL base do backend via variável de ambiente
+// No Netlify: VITE_API_URL = https://contrumaxv2.onrender.com  (SEM /api no final)
+// Em dev local: usa proxy do Vite → '/api'
 const BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : '/api';
@@ -10,13 +11,19 @@ async function request(path, options = {}) {
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
+
+  // Se a resposta não for JSON (ex: HTML de erro 404), lança erro legível
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Servidor retornou ${res.status} — verifique a URL da API`);
+  }
+
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Erro na requisição');
   return data;
 }
 
 export const api = {
-  // Products
   getProducts: (params = {}) => {
     const q = new URLSearchParams(params).toString();
     return request(`/products${q ? '?' + q : ''}`);
@@ -27,7 +34,6 @@ export const api = {
   deleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),
   getCategorias: () => request('/products/categorias/lista'),
 
-  // Movimentacoes
   getMovimentacoes: (params = {}) => {
     const q = new URLSearchParams(params).toString();
     return request(`/movimentacoes${q ? '?' + q : ''}`);
