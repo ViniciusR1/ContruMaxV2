@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
-import { Plus, Search, Pencil, Trash2, X, AlertTriangle, CheckCircle } from 'lucide-react';
+// Adicionado ChevronDown nas importações
+import { Plus, Search, Pencil, Trash2, X, AlertTriangle, CheckCircle, ChevronDown } from 'lucide-react';
 
 const CATEGORIAS = ['Cimento', 'Agregados', 'Alvenaria', 'Tintas', 'Pisos', 'Hidráulica', 'Ferragem', 'Impermeabilizante', 'Argamassa', 'Ferramentas', 'Elétrica', 'Outros'];
 const UNIDADES = ['saco', 'kg', 'm³', 'm²', 'metro', 'litro', 'galão', 'balde', 'pç', 'caixa', 'milheiro', 'barra', 'rolo'];
@@ -58,7 +59,8 @@ function ProdutoModal({ produto, onClose, onSave }) {
         </div>
         <div className="modal-body">
           {error && <div className="alert-banner danger mb-16">{error}</div>}
-          <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: 14 }}>
+          
+          <div className="form-row mb-16">
             <div className="form-group">
               <label className="form-label">Nome *</label>
               <input className="input" value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Ex: Cimento Portland" />
@@ -68,7 +70,8 @@ function ProdutoModal({ produto, onClose, onSave }) {
               <input className="input" value={form.codigo} onChange={e => set('codigo', e.target.value)} placeholder="Ex: CIM-001" />
             </div>
           </div>
-          <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: 14 }}>
+          
+          <div className="form-row mb-16">
             <div className="form-group">
               <label className="form-label">Categoria *</label>
               <select className="select" value={form.categoria} onChange={e => set('categoria', e.target.value)}>
@@ -84,11 +87,13 @@ function ProdutoModal({ produto, onClose, onSave }) {
               </select>
             </div>
           </div>
+          
           <div className="form-group" style={{ marginBottom: 14 }}>
             <label className="form-label">Fornecedor</label>
             <input className="input" value={form.fornecedor} onChange={e => set('fornecedor', e.target.value)} placeholder="Nome do fornecedor" />
           </div>
-          <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: 14 }}>
+          
+          <div className="form-row mb-16">
             <div className="form-group">
               <label className="form-label">Preço de Custo (R$)</label>
               <input className="input" type="number" min="0" step="0.01" value={form.preco_custo} onChange={e => set('preco_custo', e.target.value)} placeholder="0,00" />
@@ -98,7 +103,8 @@ function ProdutoModal({ produto, onClose, onSave }) {
               <input className="input" type="number" min="0" step="0.01" value={form.preco_venda} onChange={e => set('preco_venda', e.target.value)} placeholder="0,00" />
             </div>
           </div>
-          <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: 14 }}>
+          
+          <div className="form-row mb-16">
             <div className="form-group">
               <label className="form-label">Estoque Inicial</label>
               <input className="input" type="number" min="0" step="0.01" value={form.estoque_inicial} onChange={e => set('estoque_inicial', e.target.value)} placeholder="0" />
@@ -108,6 +114,7 @@ function ProdutoModal({ produto, onClose, onSave }) {
               <input className="input" type="number" min="0" step="0.01" value={form.estoque_minimo} onChange={e => set('estoque_minimo', e.target.value)} placeholder="0" />
             </div>
           </div>
+          
           <div className="form-group">
             <label className="form-label">Descrição</label>
             <textarea className="textarea" value={form.descricao} onChange={e => set('descricao', e.target.value)} placeholder="Informações adicionais..." />
@@ -132,6 +139,9 @@ export default function Produtos() {
   const [modal, setModal] = useState(null); // null | 'create' | produto
   const [notify, setNotify] = useState(null);
   const [deleting, setDeleting] = useState(null);
+
+  // NOVO ESTADO: Controla a abertura do dropdown customizado de categorias
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -179,7 +189,7 @@ export default function Produtos() {
       )}
 
       <div className="flex-between mb-20">
-        <div className="flex-center gap-12">
+        <div className="flex-center gap-12 mobile-search-filter-layout">
           <div className="flex-center gap-8" style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '8px 12px', gap: 8 }}>
             <Search size={15} color="var(--text-muted)" />
             <input
@@ -189,10 +199,59 @@ export default function Produtos() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <select className="select" style={{ width: 'auto' }} value={categoria} onChange={e => setCategoria(e.target.value)}>
-            <option value="">Todas as categorias</option>
-            {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          
+          {/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */}
+          {/* ALTERAÇÃO AQUI: Substituição do <select> nativo por Dropdown Customizado */}
+          {/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */}
+          <div className="custom-dropdown" style={{ position: 'relative' }}>
+            <button 
+              type="button" 
+              className="btn-ghost flex-center" 
+              style={{ 
+                padding: '9px 12px', 
+                border: '1px solid var(--border)', 
+                borderRadius: 'var(--radius)', 
+                background: 'var(--bg3)',
+                minWidth: 40 // Garante tamanho mínimo no mobile apenas com o ícone
+              }}
+              onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+            >
+              {/* O nome aparece aqui em telas maiores e some no mobile devido à classe hide-on-mobile */}
+              <span className="hide-on-mobile" style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginRight: 8 }}>
+                {categoria || "Todas as categorias"}
+              </span>
+              {/* Ícone da seta que permanece visível no mobile */}
+              <ChevronDown size={16} color="var(--text-muted)" />
+            </button>
+
+            {/* Lista absoluta de opções que abre ao clicar no botão */}
+            {showCategoryMenu && (
+              <ul className="select-options-list" style={{ 
+                position: 'absolute', top: '100%', left: 0, marginTop: 4, width: 220, 
+                background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', 
+                boxShadow: '0 4px 6px rgba(0,0,0,0.3)', listStyle: 'none', padding: 4, zIndex: 100 
+              }}>
+                <li key="all" 
+                  style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: 4, fontSize: 14, color: !categoria ? 'var(--accent)' : 'var(--text)', background: !categoria ? 'var(--accent-dim)' : 'transparent' }} 
+                  onClick={() => { setCategoria(''); setShowCategoryMenu(false); }}
+                >
+                  Todas as categorias
+                </li>
+                {CATEGORIAS.map(c => (
+                  <li key={c} 
+                    style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: 4, fontSize: 14, color: categoria === c ? 'var(--accent)' : 'var(--text)', background: categoria === c ? 'var(--accent-dim)' : 'transparent' }} 
+                    onClick={() => { setCategoria(c); setShowCategoryMenu(false); }}
+                  >
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */}
+          {/* FIM DA ALTERAÇÃO */}
+          {/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */}
+
         </div>
         <button className="btn btn-primary" onClick={() => setModal('create')}>
           <Plus size={15} /> Novo Produto

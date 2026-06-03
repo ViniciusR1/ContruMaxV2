@@ -25,23 +25,29 @@
   --transition: 150ms ease;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
 
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Evita scroll horizontal na página inteira */
 }
 
 /* ====== LAYOUT ====== */
 .layout {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  flex-direction: row;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .sidebar {
@@ -52,6 +58,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   padding: 0;
+  z-index: 10;
 }
 
 .sidebar-logo {
@@ -125,13 +132,14 @@ html, body, #root {
 
 .main-content {
   flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* CRÍTICO: Evita que conteúdos com overflow quebrem o flexbox */
+  width: 100%;
 }
 
 .page-header {
-  padding: 24px 28px 0;
+  padding: 24px 28px;
   border-bottom: 1px solid var(--border);
   background: var(--bg2);
 }
@@ -142,8 +150,6 @@ html, body, #root {
   font-weight: 800;
   letter-spacing: 0.5px;
   color: var(--text);
-  padding-bottom: 0;
-  margin-bottom: 0;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -151,6 +157,7 @@ html, body, #root {
 .page-body {
   flex: 1;
   padding: 24px 28px;
+  min-width: 0; /* CRÍTICO: Mantém tabelas contidas no layout */
 }
 
 /* ====== CARDS ====== */
@@ -184,15 +191,21 @@ html, body, #root {
 .stat-value.success { color: var(--success); }
 .stat-value.info { color: var(--info); }
 
-/* ====== GRID ====== */
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* ====== GRID FLUÍDO ====== */
+.grid-4, .grid-3, .grid-2 {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
 
 /* ====== BUTTONS ====== */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 9px 16px;
   border-radius: var(--radius);
@@ -205,10 +218,7 @@ html, body, #root {
   white-space: nowrap;
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: #000;
-}
+.btn-primary { background: var(--accent); color: #000; }
 .btn-primary:hover { background: #ffb83d; }
 
 .btn-ghost {
@@ -247,10 +257,9 @@ html, body, #root {
   padding: 9px 12px;
   outline: none;
   transition: border-color var(--transition);
+  min-width: 0; /* Impede que o input quebre layouts pequenos */
 }
-.input:focus, .select:focus, .textarea:focus {
-  border-color: var(--accent);
-}
+.input:focus, .select:focus, .textarea:focus { border-color: var(--accent); }
 .input::placeholder { color: var(--text-dim); }
 .select option { background: var(--bg2); }
 .textarea { resize: vertical; min-height: 80px; }
@@ -263,17 +272,25 @@ html, body, #root {
   letter-spacing: 0.5px;
   color: var(--text-muted);
 }
-.form-row { display: grid; gap: 14px; }
+.form-row { 
+  display: grid; 
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+}
 
 /* ====== TABLE ====== */
 .table-wrap {
+  width: 100%;
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  -webkit-overflow-scrolling: touch; 
+  display: block; /* Garante estabilidade no scroll horizontal */
 }
 
 table {
   width: 100%;
+  min-width: 600px; /* Garante que a tabela não amasse antes do scroll atuar */
   border-collapse: collapse;
 }
 
@@ -331,6 +348,7 @@ tbody td {
   z-index: 100;
   backdrop-filter: blur(4px);
   animation: fadeIn 150ms ease;
+  padding: 16px; 
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -386,10 +404,24 @@ tbody td {
 .alert-banner.success { background: var(--success-dim); border: 1px solid rgba(61,214,140,0.3); color: var(--success); }
 .alert-banner.info { background: var(--info-dim); border: 1px solid rgba(91,138,245,0.3); color: var(--info); }
 
-/* ====== MISC ====== */
+/* ====== MISC UTILITIES ====== */
 .flex { display: flex; }
 .flex-center { display: flex; align-items: center; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-wrap { display: flex; flex-wrap: wrap; gap: 12px; } /* Usar isso na barra de busca */
+.flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+/* Utilitário para barras de ferramentas/pesquisa */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+.toolbar > * {
+  flex: 1 1 auto; /* Permite que os itens cresçam ou encolham harmoniosamente */
+}
+
 .gap-8 { gap: 8px; }
 .gap-12 { gap: 12px; }
 .gap-16 { gap: 16px; }
@@ -406,88 +438,144 @@ tbody td {
 .text-accent { color: var(--accent); }
 .text-right { text-align: right; }
 
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px;
-  color: var(--text-muted);
-  font-size: 14px;
-  gap: 10px;
+/* ==========================================================================
+   MÍDIAS QUERIES 
+   ========================================================================== */
+
+/* --- DISPOSITIVOS MÓVEIS (Telas até 767px) --- */
+@media (max-width: 767px) {
+  .layout {
+    flex-direction: column; 
+    min-height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo {
+    padding: 14px 20px;
+    justify-content: center;
+  }
+
+  .sidebar-nav {
+    flex-direction: row; 
+    overflow-x: auto; 
+    padding: 10px;
+    gap: 6px;
+    scrollbar-width: none; 
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    display: none; 
+  }
+
+  .nav-item {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+
+  .sidebar-footer {
+    display: none; 
+  }
+
+  .page-header, .page-body {
+    padding: 16px;
+  }
+
+  /* --- CORREÇÃO DE OVERFLOW NOS CAMPOS DE BUSCA/FILTRO --- */
+  /* Regras gerais convertem tudo em coluna e permitem quebra (wrap) */
+  .flex, .flex-between, .section-head, .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: wrap; /* Adicionado para garantir empilhamento */
+  }
+
+  .toolbar > * {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  /* Garante que elementos de formulário e divs wrapper ocupem 100% da linha no mobile */
+  .flex > .input, .flex > .select, .flex > .btn, 
+  .flex-between > .input, .flex-between > .select, .flex-between > .btn,
+  .flex-between > div { /* Seleciona as divs que envolvem a busca e o dropdown */
+    width: 100%;
+    flex: 1 1 100%;
+    margin-bottom: 4px;
+  }
+
+  /* --- CORREÇÃO DO DROPDOWN (O menu que vazava) --- */
+  /* Aplique estas classes na div em volta do seu botão de categoria se necessário, 
+     ou deixe as regras acima atuarem genéricamente */
+  
+  /* Faz o botão do dropdown esticar até as bordas */
+  .flex-between > div > .btn {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Mantém o texto e o ícone afastados */
+  }
+
+  /* Garante que a lista/ul do menu não passe de 100% da tela */
+  .dropdown-menu, /* Caso você tenha uma classe com este nome */
+  [role="menu"],  /* Se usar atributos de acessibilidade no menu */
+  ul.absolute {   /* Se a sua lista usar position absolute e classe absolute */
+    width: 100% !important;
+    left: 0;
+    right: 0;
+    max-width: 100vw;
+  }
+
+  /* Esconde o texto no mobile se você ainda quiser usar aquela regra antiga */
+  .hide-on-mobile {
+    display: none !important;
+  }
 }
 
-.empty {
-  text-align: center;
-  padding: 50px 20px;
-  color: var(--text-muted);
+/* Celulares normais a pequenos */
+@media (max-width: 576px) {
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .stat-value {
+    font-size: 32px; 
+  }
+  
+  /* Ajuste no form para não vazar a tela */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 20px 0;
+/* Tablets na horizontal (577px até 992px) */
+@media (min-width: 577px) and (max-width: 992px) {
+  .grid-4, .grid-3 {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+  .grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.stock-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.stock-bar-track {
-  flex: 1;
-  height: 5px;
-  background: var(--bg3);
-  border-radius: 100px;
-  overflow: hidden;
-}
-.stock-bar-fill {
-  height: 100%;
-  border-radius: 100px;
-  transition: width 0.4s ease;
-}
+/* --- MONITORES GRANDES (A partir de 1440px) --- */
+@media (min-width: 1440px) {
+  :root {
+    --sidebar-w: 250px; 
+  }
 
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
+  html, body {
+    font-size: 16px; 
+  }
 
-.section-title {
-  font-family: var(--font-cond);
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-}
+  .main-content {
+    align-items: center; 
+  }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  .page-header, .page-body {
+    width: 100%;
+    max-width: 1600px; 
+    padding: 32px 40px;
+  }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 14px 18px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 999;
-  max-width: 360px;
-  animation: slideIn 300ms ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-.notification.success { background: var(--success); color: #000; }
-.notification.error { background: var(--danger); color: #fff; }
-.notification.warning { background: var(--accent); color: #000; }
-@keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
